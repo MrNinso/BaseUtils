@@ -1,5 +1,7 @@
 package com.developer.base.utils.lib.object;
 
+import androidx.annotation.Nullable;
+
 import com.developer.base.utils.lib.tool.BaseRandom;
 import com.google.gson.Gson;
 
@@ -28,12 +30,30 @@ public class BaseList<T> extends ArrayList<T> {
         this.addAll(c);
     }
 
-    public BaseList(int size, AddAll<T> a) {
-        this.addAll(size, a);
+    public BaseList(int repeat, AddAll<T> a) {
+        this.addAll(repeat, a);
+    }
+
+    @Override
+    public T remove(int index) {
+        if (this.size() > index)
+            return super.remove(index);
+        return null;
+    }
+
+    @Override
+    public boolean remove(@Nullable Object o) {
+        if (this.contains(o))
+            return super.remove(o);
+        else
+            return false;
     }
 
     public T getRandom() {
-        return this.get(BaseRandom.getIntace().getRandomPositiveInt(this.size() - 1, 0));
+        if (this.size() > 0)
+            return this.get(BaseRandom.getIntace().getRandomPositiveInt(this.size() - 1, 0));
+        else
+            return null;
     }
 
     public boolean addIfAbsent(int index, T t) {
@@ -58,8 +78,8 @@ public class BaseList<T> extends ArrayList<T> {
         return r;
     }
 
-    public BaseList<Boolean> addAllAbsent(int startPosition, int size, AddAll<T> a){
-        return this.addAllAbsent(startPosition, new BaseList<>(size, a));
+    public BaseList<Boolean> addAllAbsent(int startPosition, int repeat, AddAll<T> a){
+        return this.addAllAbsent(startPosition, new BaseList<>(repeat, a));
     }
 
     public BaseList<Boolean> addAllAbsent(int startPosition, T[] ts) {
@@ -82,20 +102,28 @@ public class BaseList<T> extends ArrayList<T> {
         return this.addAllAbsent(this.size(), json);
     }
 
-    public BaseList<Boolean> addAllAbsent(int size, AddAll<T> a) {
-        return this.addAllAbsent(this.size(), size, a);
+    public BaseList<Boolean> addAllAbsent(int repeat, AddAll<T> a) {
+        return this.addAllAbsent(this.size(), repeat, a);
     }
 
     public void addAll(T[] ts) {
-        this.addAll(Arrays.asList(ts));
+        this.addAll(this.size(), ts);
+    }
+
+    public void addAll(int startPosition,T[] ts) {
+        this.addAll(startPosition, Arrays.asList(ts));
     }
 
     public void addAll(String json) {
         this.addAll(new Gson().fromJson(json, this.getClass()));
     }
 
-    public void addAll(int size, AddAll<T> a) {
-        this.addAll(this.size(), size, a);
+    public void addAll(int startPosition, String json) {
+        this.addAll(startPosition, new Gson().fromJson(json, this.getClass()));
+    }
+
+    public void addAll(int repeat, AddAll<T> a) {
+        this.addAll(this.size(), repeat, a);
     }
 
     public void addAll(int startPosition, int size, AddAll<T> a) {
@@ -120,15 +148,51 @@ public class BaseList<T> extends ArrayList<T> {
     public int countIf(Count<T> c) {
         final int[] count = {0};
 
-        forEach((i, t) -> count[0] += (c.onItem(i, t, count[0])) ? 1 : 0);
+        forEach((i, t) -> count[0] += (c.count(i, t, count[0])) ? 1 : 0);
 
         return count[0];
+    }
+
+    public T removeIf(RemoveIf<T> r) {
+        T t = null;
+        int pos = 0;
+
+        for (int i = 0; i < this.size(); i++) {
+            T temp = this.get(i);
+            if (r.remove(i, temp, 0)) {
+                t = temp;
+                pos = i;
+                break;
+            }
+        }
+
+        if (t != null) {
+            this.remove(pos);
+        }
+
+        return t;
+    }
+
+    public T removeIfExists(int index) {
+        if (this.size() > index) {
+            return this.remove(index);
+        } else {
+            return null;
+        }
+    }
+
+    public BaseList<T> removeAllIf(RemoveIf<T> r) {
+        BaseList<T> old = this.extract((index, t, count) -> (r.remove(index, t, count)) ? t : null);
+
+        this.removeAll(old);
+
+        return old;
     }
 
     public <K> BaseMap<K,T> map(MapList<K, T> m) {
         BaseMap<K, T> baseMap = new BaseMap<>();
 
-        forEach((index, t) -> baseMap.put(m.onItem(index, t), t));
+        forEach((index, t) -> baseMap.put(m.getKey(index, t), t));
 
         return baseMap;
     }
@@ -137,7 +201,7 @@ public class BaseList<T> extends ArrayList<T> {
         BaseList<O> result = new BaseList<>();
 
         forEach((index, t) -> {
-            O o = e.onItem(index, t, result.size());
+            O o = e.extract(index, t, result.size());
 
             if (o != null) {
                 result.add(o);
@@ -151,7 +215,7 @@ public class BaseList<T> extends ArrayList<T> {
         BaseMap<K, O> result = new BaseMap<>();
 
         forEach((i, t) -> {
-            Entry<K, O> entry = e.onItem(i, t, result.size());
+            Entry<K, O> entry = e.map(i, t, result.size());
 
             if (entry != null) {
                 result.put(entry);
@@ -163,7 +227,7 @@ public class BaseList<T> extends ArrayList<T> {
 
     public void forEach(Each<T> e) {
         for (int i = 0; i < this.size(); i++) {
-            e.onItem(i, this.get(i));
+            e.each(i, this.get(i));
         }
     }
 
@@ -172,11 +236,15 @@ public class BaseList<T> extends ArrayList<T> {
     }
 
     public interface Count<T> {
-        boolean onItem(int index, T t, int count);
+        boolean count(int index, T t, int count);
+    }
+
+    public interface RemoveIf<T> {
+        boolean remove(int index, T t, int countRemoveList);
     }
 
     public interface Each<T> {
-        void onItem(int index, T t);
+        void each(int index, T t);
     }
 
     public interface AddAll<T> {
@@ -188,14 +256,14 @@ public class BaseList<T> extends ArrayList<T> {
     }
 
     public interface MapList<K,T> {
-        K onItem(int index, T t);
+        K getKey(int index, T t);
     }
 
     public interface ExtractList<I, O> {
-        O onItem(int index, I i, int count);
+        O extract(int index, I i, int count);
     }
 
     public interface ExtractListToMap<K, IT, OT> {
-        Entry<K, OT> onItem(int index, IT i, int count);
+        Entry<K, OT> map(int index, IT i, int count);
     }
 }

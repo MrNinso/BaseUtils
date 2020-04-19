@@ -8,9 +8,12 @@ import com.google.gson.Gson;
 import java.security.Key;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class BaseMap<K, V> extends HashMap<K, V> {
+public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable {
 
     private BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
     private BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
@@ -27,13 +30,12 @@ public class BaseMap<K, V> extends HashMap<K, V> {
 
     @Nullable
     @Override
-    public V put(K key, V value) {
+    public V put(@NonNull K key,@NonNull V value) {
         boolean isNewKey = this.containsKey(key);
-        V v = super.put(key, value);
 
         mOnPutObservers.forEach((index, observer) -> observer.onPut(key, value, isNewKey));
 
-        return v;
+        return super.put(key, value);
     }
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -45,17 +47,17 @@ public class BaseMap<K, V> extends HashMap<K, V> {
                 this.containsKey(temp.getKeyList().get(i))
         );
 
-        super.putAll(temp);
-
         temp.forEach((i, key, value) ->
                 mOnPutObservers.forEach((index, observer) -> observer.onPut(key, value, isNew.get(i)))
         );
+
+        super.putAll(temp);
 
     }
 
     @Nullable
     @Override
-    public V putIfAbsent(K key, V value) {
+    public V putIfAbsent(@NonNull K key,@NonNull V value) {
         if (!this.containsKey(key) || this.get(key) == null) {
             this.put(key, value);
             return value;
@@ -66,11 +68,14 @@ public class BaseMap<K, V> extends HashMap<K, V> {
     @Nullable
     @Override
     public V remove(@Nullable Object key) {
-        V temp = super.remove(key);
+        if (key != null) {
+            V temp = super.remove(key);
 
-        mOnRemoveObservers.forEach((index, observer) -> observer.onRemove((K) key, temp));
+            mOnRemoveObservers.forEach((index, observer) -> observer.onRemove((K) key, temp));
 
-        return temp;
+            return temp;
+        }
+        return null;
     }
 
     @Override
@@ -81,6 +86,27 @@ public class BaseMap<K, V> extends HashMap<K, V> {
                 return true;
             }
         }
+        return false;
+    }
+
+    @Override
+    public void clear() {
+        mOnPutObservers.clear();
+        mOnRemoveObservers.clear();
+        super.clear();
+    }
+
+    public boolean removeIf(Remove<K, V> r) {
+        Iterator<Entry<K, V>> iterator = this.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Entry<K, V> e = iterator.next();
+            if (r.remove(e.getKey(), e.getValue())) {
+                iterator.remove();
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -132,7 +158,9 @@ public class BaseMap<K, V> extends HashMap<K, V> {
     }
 
     public BaseList<K> getKeyList() {
-        return new BaseList<>(this.keySet());
+        BaseList<K> keys = new BaseList<>();
+        keys.addAll(this.keySet());
+        return (BaseList<K>) keys.clone();
     }
 
     public int countIf(Count<K, V> c) {
@@ -172,9 +200,9 @@ public class BaseMap<K, V> extends HashMap<K, V> {
     }
 
     public void forEach(Each<K, V> e) {
-        getKeyList().forEach((i, k) -> {
-            e.onItem(i, k, this.get(k));
-        });
+        getKeyList().forEach((i, k) ->
+                e.onItem(i, k, this.get(k))
+        );
     }
 
     public String toJson() {
@@ -201,6 +229,10 @@ public class BaseMap<K, V> extends HashMap<K, V> {
 
     public interface Count<K, V> {
         boolean onItem(int i, K k, V v,int count);
+    }
+
+    public interface Remove<K, V> {
+        boolean remove(K k, V v);
     }
 
     public interface Extract<IK, IV, OK, OV> {

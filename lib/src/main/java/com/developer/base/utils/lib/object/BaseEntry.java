@@ -31,8 +31,9 @@ public class BaseEntry<K, V> implements Map.Entry<K, V> {
 
     @Override
     public V setValue(V value) {
+        V  old = this.mValue;
         this.mValue = value;
-        return value;
+        return old;
     }
 
     public String toJson() {

@@ -1,11 +1,11 @@
 package com.developer.base.utils.lib;
 
-import android.util.Base64;
-
 import com.developer.base.utils.lib.object.BaseEntry;
 import com.developer.base.utils.lib.object.BaseList;
 import com.developer.base.utils.lib.object.BaseMap;
-import com.developer.base.utils.lib.tool.BaseCrypto;
+import com.developer.base.utils.lib.object.BaseTask;
+import com.developer.base.utils.lib.object.BaseThreadPool;
+import com.developer.base.utils.lib.tool.BaseDevice;
 import com.developer.base.utils.lib.tool.BaseRandom;
 import com.google.gson.Gson;
 
@@ -13,14 +13,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BaseUnitTest {
     BaseList<String> Fruits = new BaseList<>();
     BaseList<Integer> Random;
     BaseMap<String, Float> FruitsPrices = new BaseMap<>();
-    
+
+    boolean wait = true;
+
     @Before
     public void setup() {
         Fruits.add("Banana");
@@ -89,7 +91,7 @@ public class BaseUnitTest {
 
     @Test
     public void mapList() {
-        BaseMap<Integer, String> indexMap = Fruits.map((index, s) -> index);
+        BaseMap<Integer, String> indexMap = Fruits.map((index, s, count) -> index);
         BaseMap<String, Integer> fruitsMap = Fruits.extractMap((index, f, count) ->
                 new BaseEntry<>(f, index)
         );
@@ -104,19 +106,9 @@ public class BaseUnitTest {
     }
 
     @Test
-    public void Base64Test() {
-        BaseMap<String, byte[]> fB64Map = Fruits.extractMap((index, i, count) ->
-            new BaseEntry<>(i, BaseCrypto.getInstance().toBase64(i.getBytes(StandardCharsets.UTF_8)))
-        );
+    public void wikiTest() {
 
-        Fruits.forEach((index, s) -> {
-            System.out.println(s);
-            System.out.println(Arrays.toString(fB64Map.get(s)));
-            System.out.println(new String(fB64Map.get(s), StandardCharsets.UTF_8));
-            System.out.println(new String(BaseCrypto.getInstance().fromBase64(fB64Map.get(s)), StandardCharsets.UTF_8));
-        });
+        BaseList<String> exampleList = new BaseList<>(5, index -> String.valueOf(index*2));
     }
-
-
 
 }
