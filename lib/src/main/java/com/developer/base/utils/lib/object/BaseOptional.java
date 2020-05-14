@@ -73,7 +73,16 @@ public class BaseOptional<T> {
     }
 
     public static <T> BaseOptional<T> of(T value) {
-        return value == null ? empty() : new BaseOptional<>(value);
+        if (value == null)
+            return empty();
+        else if (value instanceof BaseOptional<?>)
+            return (BaseOptional<T>) value;
+        else
+            return new BaseOptional<>(value);
+    }
+
+    public static <T> T from(BaseOptional<T> optional) {
+        return optional != null ? optional.get() : null;
     }
 
     public static boolean isEmpty(BaseOptional<?> optional) {

@@ -3,17 +3,12 @@ package com.developer.base.utils.lib.object;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-
-import java.security.Key;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Objects;
 
-public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable {
+public class BaseMap<K, V> extends HashMap<K, V> {
 
     private BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
     private BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
@@ -24,18 +19,52 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
         this.putAll(size, p);
     }
 
-    public BaseMap(String json) {
-        this.putAll(json);
+    public BaseMap(Map<K, V> m) {
+        putAll(m);
+    }
+
+    private V putVal(@NonNull K key, V value, boolean notify) {
+        if (notify) {
+            boolean isNewKey = this.containsKey(key);
+            mOnPutObservers.forEach((index, observer) -> observer.onPut(key, value, isNewKey));
+        }
+        return super.put(key, value);
     }
 
     @Nullable
     @Override
-    public V put(@NonNull K key,@NonNull V value) {
-        boolean isNewKey = this.containsKey(key);
+    public V put(@NonNull K key, V value) {
+        return putVal(key, value, false);
+    }
 
-        mOnPutObservers.forEach((index, observer) -> observer.onPut(key, value, isNewKey));
+    public V putAndNotify(@NonNull K key, V value) {
+        return putVal(key, value, true);
+    }
 
-        return super.put(key, value);
+    public V put(Entry<K, V> e) {
+        return this.putVal(e.getKey(), e.getValue(), false);
+    }
+
+    public V putAndNotify(Entry<K, V> e) {
+        return this.putVal(e.getKey(), e.getValue(), true);
+    }
+
+    private V putIfAbsentVal(@NonNull K key,@NonNull V value, boolean notify){
+        if (!this.containsKey(key) || this.get(key) == null) {
+            this.putVal(key, value, notify);
+            return value;
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public V putIfAbsent(@NonNull K key,@NonNull V value) {
+        return putIfAbsentVal(key, value, false);
+    }
+
+    public V putIfAbsentAndNotify(@NonNull K key,@NonNull V value) {
+        return putIfAbsentVal(key, value, true);
     }
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -53,16 +82,6 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
 
         super.putAll(temp);
 
-    }
-
-    @Nullable
-    @Override
-    public V putIfAbsent(@NonNull K key,@NonNull V value) {
-        if (!this.containsKey(key) || this.get(key) == null) {
-            this.put(key, value);
-            return value;
-        }
-        return null;
     }
 
     @Nullable
@@ -89,12 +108,7 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
         return false;
     }
 
-    @Override
-    public void clear() {
-        mOnPutObservers.clear();
-        mOnRemoveObservers.clear();
-        super.clear();
-    }
+
 
     public boolean removeIf(Remove<K, V> r) {
         Iterator<Entry<K, V>> iterator = this.entrySet().iterator();
@@ -114,13 +128,7 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
         return (this.containsKey(k)) ? this.get(k) : defaultValue;
     }
 
-    public void put(Entry<K, V> e) {
-        this.put(e.getKey(), e.getValue());
-    }
 
-    public void put(String json) {
-        this.put(new Gson().fromJson(json, BaseEntry.class));
-    }
 
     public BaseMap<K, Boolean> putAllAbsent(Map<K, V> m) {
         BaseMap<K, Boolean> r = new BaseMap<>();
@@ -139,16 +147,8 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
         return r;
     }
 
-    public BaseMap<K, Boolean> putAllAbsent(String json) {
-        return this.putAllAbsent(new Gson().fromJson(json, this.getClass()));
-    }
-
     public BaseMap<K, Boolean> putAllAbsent(int size, PutAll<K, V> p) {
         return this.putAllAbsent(new BaseMap<>(size, p));
-    }
-
-    public void putAll(String json) {
-        this.putAll(new Gson().fromJson(json, this.getClass()));
     }
 
     public void putAll(int size, PutAll<K, V> p) {
@@ -205,10 +205,10 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
         );
     }
 
-    public String toJson() {
-        BaseMap<K, V> temp = new BaseMap<>();
-        temp.putAll(this);
-        return new Gson().toJson(temp);
+    public void forEachBreakable(EachBreakble<K, V> e) {
+        getKeyList().forEachBreakable((i, k) ->
+                e.onItem(i, k, this.get(k))
+        );
     }
 
     public boolean addOnPutListener(PutListener<K, V> p) {
@@ -219,8 +219,103 @@ public class BaseMap<K, V> extends ConcurrentHashMap<K, V> implements Cloneable 
         return this.mOnRemoveObservers.addIfAbsent(r);
     }
 
+    /**
+     * Remove Observers and clear the map
+     */
+    @Override
+    public void clear() {
+        clearObservers();
+        clearMap();
+    }
+
+    /**
+     * Remove Observers
+     */
+    public void clearObservers() {
+        mOnPutObservers.clear();
+        mOnRemoveObservers.clear();
+    }
+
+    /**
+     * clear just the map
+     */
+    public void clearMap() {
+        super.clear();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        if (this == o)
+            return true;
+
+        if(!(o instanceof Map))
+            return false;
+
+        if (o instanceof BaseMap<?, ?>) {
+            BaseMap<?,?> other = (BaseMap<?, ?>) o;
+
+            if (other.size() != this.size())
+                return false;
+
+            if (!other.mOnRemoveObservers.equals(this.mOnRemoveObservers))
+                return false;
+
+            if (!other.mOnPutObservers.equals(this.mOnPutObservers))
+                return false;
+
+            final boolean[] result = new boolean[]{true};
+
+            this.forEachBreakable((i, key, value) -> {
+                Object otherVal = other.get(key);
+                if (otherVal == null) {
+                    result[0] = false;
+                    return  EachBreakble.BREAK;
+                }
+
+                if (!Objects.equals(value, otherVal)) {
+                    result[0] = false;
+                    return  EachBreakble.BREAK;
+                }
+
+                return EachBreakble.CONTINUE;
+            });
+
+            return result[0];
+        } else {
+            Map<?, ?> other = (Map<?, ?>) o;
+
+            if (other.size() != this.size())
+                return false;
+
+            final boolean[] result = new boolean[]{true};
+
+            this.forEachBreakable((i, key, value) -> {
+                Object otherValue = other.get(key);
+                if (!Objects.equals(value, otherValue))
+                    result[0] = false;
+
+                return result[0] ? EachBreakble.CONTINUE : EachBreakble.BREAK;
+            });
+
+            return result[0];
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.extract((i, key, value, count) -> new BaseEntry<>(key, value)).hashCode();
+    }
+
     public interface Each<K, V> {
         void onItem(int i, K key, V value);
+    }
+
+    public interface EachBreakble<K, V> {
+        byte BREAK = 0x0;
+        byte CONTINUE = 0x1;
+        byte SKIP_NEXT = 0x2;
+
+        byte onItem(int i, K key, V value);
     }
 
     public interface PutAll<K, V> {

@@ -3,11 +3,11 @@ package com.developer.base.utils.lib.object;
 import androidx.annotation.Nullable;
 
 import com.developer.base.utils.lib.tool.BaseRandom;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map.Entry;
 
 public class BaseList<T> extends ArrayList<T> {
@@ -19,10 +19,6 @@ public class BaseList<T> extends ArrayList<T> {
     public BaseList(T[] ts) {
         super();
         this.addAll(ts);
-    }
-
-    public BaseList(String json) {
-        this.addAll(json);
     }
 
     public BaseList(Collection<T> c) {
@@ -86,20 +82,12 @@ public class BaseList<T> extends ArrayList<T> {
         return this.addAllAbsent(startPosition, new BaseList<>(ts));
     }
 
-    public BaseList<Boolean> addAllAbsent(int startPosition, String json) {
-        return this.addAllAbsent(startPosition, new Gson().fromJson(json, this.getClass()));
-    }
-
     public BaseList<Boolean> addAllAbsent(Collection<T> ts) {
         return this.addAllAbsent(this.size(), ts);
     }
 
     public BaseList<Boolean> addAllAbsent(T[] ts) {
         return this.addAllAbsent(this.size(), ts);
-    }
-
-    public BaseList<Boolean> addAllAbsent(String json) {
-        return this.addAllAbsent(this.size(), json);
     }
 
     public BaseList<Boolean> addAllAbsent(int repeat, AddAll<T> a) {
@@ -112,14 +100,6 @@ public class BaseList<T> extends ArrayList<T> {
 
     public void addAll(int startPosition,T[] ts) {
         this.addAll(startPosition, Arrays.asList(ts));
-    }
-
-    public void addAll(String json) {
-        this.addAll(new Gson().fromJson(json, this.getClass()));
-    }
-
-    public void addAll(int startPosition, String json) {
-        this.addAll(startPosition, new Gson().fromJson(json, this.getClass()));
     }
 
     public void addAll(int repeat, AddAll<T> a) {
@@ -231,8 +211,42 @@ public class BaseList<T> extends ArrayList<T> {
         }
     }
 
-    public String toJson() {
-        return new Gson().toJson(this);
+    public void forEachBreakable(EachBreakble<T> e) {
+        for (int i = 0; i < this.size(); i++) {
+            byte r = e.each(i, this.get(i));
+
+            if (r == EachBreakble.BREAK)
+                break;
+            else if (r == EachBreakble.SKIP_NEXT)
+                i++;
+        }
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        if (this == o)
+            return true;
+
+        if (o instanceof List<?>) {
+            List<?> other = (List<?>) o;
+
+            if (other.size() != this.size())
+                return false;
+
+            final boolean[] r = new boolean[] {true};
+
+            this.forEachBreakable((i, t) -> {
+                if (!t.equals(other.get(i))) {
+                    r[0] = false;
+                    return EachBreakble.BREAK;
+                }
+
+                return EachBreakble.CONTINUE;
+            });
+
+            return r[0];
+        }
+        return false;
     }
 
     public interface Count<T> {
@@ -245,6 +259,14 @@ public class BaseList<T> extends ArrayList<T> {
 
     public interface Each<T> {
         void each(int index, T t);
+    }
+
+    public interface EachBreakble<T> {
+        byte BREAK = 0x0;
+        byte CONTINUE = 0x1;
+        byte SKIP_NEXT = 0x2;
+
+        byte each(int i, T t);
     }
 
     public interface AddAll<T> {

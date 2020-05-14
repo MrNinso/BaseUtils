@@ -124,7 +124,7 @@ public class BaseDevice {
         return mVibrator;
     }
 
-    private static class BaseApp {
+    public static class BaseApp {
         private Application nApp;
 
         private BaseApp() {
@@ -175,7 +175,7 @@ public class BaseDevice {
         }
     }
 
-    private static class BaseScreen {
+    public static class BaseScreen {
 
         public DisplayMetrics getScreenSizePixels(Activity activity) {
             DisplayMetrics dm = new DisplayMetrics();
@@ -245,7 +245,7 @@ public class BaseDevice {
         }
     }
 
-    private static class BaseVibrator {
+    public static class BaseVibrator {
         private Vibrator nVibrator;
 
         private BaseVibrator() {

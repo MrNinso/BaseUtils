@@ -1,18 +1,14 @@
 package com.developer.base.utils.lib.object;
 
-import com.google.gson.Gson;
+import androidx.annotation.Nullable;
 
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 public class BaseEntry<K, V> implements Map.Entry<K, V> {
     private K mKey;
     private V mValue;
-
-    public BaseEntry(String json) {
-        BaseEntry<K, V> temp = new Gson().fromJson(json, this.getClass());
-        this.mKey = temp.mKey;
-        this.mValue = temp.mValue;
-    }
 
     public BaseEntry(K Key, V Value) {
         this.mKey = Key;
@@ -36,7 +32,16 @@ public class BaseEntry<K, V> implements Map.Entry<K, V> {
         return old;
     }
 
-    public String toJson() {
-        return new Gson().toJson(this);
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj)
+            return true;
+
+        if (!(obj instanceof Map.Entry<?, ?>))
+            return false;
+
+        Entry<?, ?> e = (Entry<?, ?>) obj;
+
+        return Objects.equals(e.getKey(), this.getKey()) && Objects.equals(e.getValue(), this.getValue());
     }
 }

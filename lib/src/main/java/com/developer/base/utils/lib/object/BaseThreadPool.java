@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 public class BaseThreadPool {
 
-    private BaseMap<Integer, BaseOptional<BaseTask>> mTaskPool = new BaseMap<>();
+    private ConcurrentBaseMap<Integer, BaseTask> mTaskPool = new ConcurrentBaseMap<>();
     private BaseList<BaseTask> mQueue = new BaseList<>();
     private BaseList<Thread> mThreads = new BaseList<>();
 
@@ -21,15 +21,13 @@ public class BaseThreadPool {
 
     private void init(int cores) {
         this.mCores = cores;
-        this.mTaskPool.putAll(cores, index -> new BaseEntry<>(index, BaseOptional.empty()));
+        this.mTaskPool.putAll(cores, index -> new BaseEntry<>(index, null));
 
-        mTaskPool.addOnPutListener((key, Otask, isNewKey) -> {
-            if (!BaseOptional.isEmpty(Otask)) {
-                BaseTask task = Otask.get();
-
+        mTaskPool.addOnPutListener((key, task, isNewKey) -> {
+            if (task != null) {
                 task.mExit = task1 -> {
                     mTaskPool.removeIf((integer, task2) ->
-                            task1 == task2.get()
+                            task1 == task2
                     );
 
                     mThreads.remove(Thread.currentThread());
@@ -51,7 +49,7 @@ public class BaseThreadPool {
 
     private Integer getNextFreeCore() {
         for (int i = 0; i < this.mCores; i++) {
-            if (BaseOptional.isEmpty(mTaskPool.get(i, null))) {
+            if (mTaskPool.get(i, null) == null) {
                 return i;
             }
         }
@@ -88,7 +86,7 @@ public class BaseThreadPool {
         int free = 0;
 
         for (int i = 0; i < this.mCores; i++) {
-            if (BaseOptional.isEmpty(this.mTaskPool.get(i, null))) {
+            if (this.mTaskPool.get(i, null) == null) {
                 free++;
             }
         }
