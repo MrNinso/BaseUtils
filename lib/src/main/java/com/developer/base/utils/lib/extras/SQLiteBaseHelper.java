@@ -5,9 +5,11 @@ import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.developer.base.utils.lib.object.BaseEntry;
 import com.developer.base.utils.lib.object.BaseList;
@@ -23,6 +25,7 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
         super(context, name, factory, version, errorHandler);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public SQLiteBaseHelper(@Nullable Context context, @Nullable String name, int version, @NonNull SQLiteDatabase.OpenParams openParams) {
         super(context, name, version, openParams);
     }
@@ -69,11 +72,26 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    protected interface Each {
+    public boolean doTransaction(Transaction t) {
+        SQLiteDatabase db = getReadableDatabase();
+
+        db.beginTransaction();
+
+        boolean r = t.transaction(this);
+
+        if (r) {
+            db.setTransactionSuccessful();
+        }
+
+        db.endTransaction();
+        return r;
+    }
+
+    public interface Each {
         void each(Cursor c);
     }
 
-    protected interface EachBreakable {
+    public interface EachBreakable {
         byte BREAK = 0x0;
         byte CONTINUE = 0x1;
         byte SKIP_NEXT = 0x2;
@@ -81,11 +99,15 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
         byte each(Cursor c);
     }
 
-    protected interface QueryToList<V> {
+    public interface Transaction {
+        boolean transaction(SQLiteBaseHelper helper);
+    }
+
+    public interface QueryToList<V> {
         V next(Cursor c, int count);
     }
 
-    protected interface QueryToMap<K, V> {
+    public interface QueryToMap<K, V> {
         BaseEntry<K, V> next(Cursor c, int count);
     }
 }
