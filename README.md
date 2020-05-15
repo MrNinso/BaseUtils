@@ -20,7 +20,7 @@ allprojects {
  2. Add the dependency
  ````css
 dependencies {
-		implementation 'com.github.MrNinso:BaseUtils:1.0.1'
+		implementation 'com.github.MrNinso:BaseUtils:1.0.5.RC'
 }
 ````
 
