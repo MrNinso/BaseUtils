@@ -27,7 +27,7 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
         super(context, name, version, openParams);
     }
 
-    public void forEach(Cursor c, forEach f) {
+    public void forEach(Cursor c, Each f) {
         if (c.moveToFirst()) {
             do {
                 f.each(c);
@@ -35,6 +35,18 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
         }
 
         c.close();
+    }
+
+    public void forEachBreakable(Cursor c, EachBreakable f) {
+        if (c.moveToFirst()) {
+            do {
+                byte r = f.each(c);
+                if (r == EachBreakable.SKIP_NEXT)
+                    c.moveToNext();
+                else if (r == EachBreakable.BREAK)
+                    break;
+            } while (c.moveToNext());
+        }
     }
 
     public <V> BaseList<V> readList(String query, String[] args, QueryToList<V> q) {
@@ -57,8 +69,16 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    protected interface forEach {
+    protected interface Each {
         void each(Cursor c);
+    }
+
+    protected interface EachBreakable {
+        byte BREAK = 0x0;
+        byte CONTINUE = 0x1;
+        byte SKIP_NEXT = 0x2;
+
+        byte each(Cursor c);
     }
 
     protected interface QueryToList<V> {

@@ -211,13 +211,13 @@ public class BaseList<T> extends ArrayList<T> {
         }
     }
 
-    public void forEachBreakable(EachBreakble<T> e) {
+    public void forEachBreakable(EachBreakable<T> e) {
         for (int i = 0; i < this.size(); i++) {
             byte r = e.each(i, this.get(i));
 
-            if (r == EachBreakble.BREAK)
+            if (r == EachBreakable.BREAK)
                 break;
-            else if (r == EachBreakble.SKIP_NEXT)
+            else if (r == EachBreakable.SKIP_NEXT)
                 i++;
         }
     }
@@ -238,10 +238,10 @@ public class BaseList<T> extends ArrayList<T> {
             this.forEachBreakable((i, t) -> {
                 if (!t.equals(other.get(i))) {
                     r[0] = false;
-                    return EachBreakble.BREAK;
+                    return EachBreakable.BREAK;
                 }
 
-                return EachBreakble.CONTINUE;
+                return EachBreakable.CONTINUE;
             });
 
             return r[0];
@@ -261,7 +261,7 @@ public class BaseList<T> extends ArrayList<T> {
         void each(int index, T t);
     }
 
-    public interface EachBreakble<T> {
+    public interface EachBreakable<T> {
         byte BREAK = 0x0;
         byte CONTINUE = 0x1;
         byte SKIP_NEXT = 0x2;
