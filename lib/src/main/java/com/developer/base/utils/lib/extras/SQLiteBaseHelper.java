@@ -73,7 +73,7 @@ public abstract class SQLiteBaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean doTransaction(Transaction t) {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
 
         db.beginTransaction();
 
