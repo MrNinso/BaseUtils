@@ -205,7 +205,7 @@ public class BaseMap<K, V> extends HashMap<K, V> {
         );
     }
 
-    public void forEachBreakable(EachBreakble<K, V> e) {
+    public void forEachBreakable(EachBreakable<K, V> e) {
         getKeyList().forEachBreakable((i, k) ->
                 e.onItem(i, k, this.get(k))
         );
@@ -269,15 +269,15 @@ public class BaseMap<K, V> extends HashMap<K, V> {
                 Object otherVal = other.get(key);
                 if (otherVal == null) {
                     result[0] = false;
-                    return  EachBreakble.BREAK;
+                    return  EachBreakable.BREAK;
                 }
 
                 if (!Objects.equals(value, otherVal)) {
                     result[0] = false;
-                    return  EachBreakble.BREAK;
+                    return  EachBreakable.BREAK;
                 }
 
-                return EachBreakble.CONTINUE;
+                return EachBreakable.CONTINUE;
             });
 
             return result[0];
@@ -294,7 +294,7 @@ public class BaseMap<K, V> extends HashMap<K, V> {
                 if (!Objects.equals(value, otherValue))
                     result[0] = false;
 
-                return result[0] ? EachBreakble.CONTINUE : EachBreakble.BREAK;
+                return result[0] ? EachBreakable.CONTINUE : EachBreakable.BREAK;
             });
 
             return result[0];
@@ -310,7 +310,7 @@ public class BaseMap<K, V> extends HashMap<K, V> {
         void onItem(int i, K key, V value);
     }
 
-    public interface EachBreakble<K, V> {
+    public interface EachBreakable<K, V> {
         byte BREAK = 0x0;
         byte CONTINUE = 0x1;
         byte SKIP_NEXT = 0x2;

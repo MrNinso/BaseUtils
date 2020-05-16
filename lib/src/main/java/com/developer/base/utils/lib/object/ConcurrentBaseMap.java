@@ -273,9 +273,9 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
         this.forEachBreakable((i, k, v) -> {
             if (r.remove(k, v)) {
                 key[0] = k;
-                return EachBreakble.BREAK;
+                return EachBreakable.BREAK;
             }
-            return EachBreakble.CONTINUE;
+            return EachBreakable.CONTINUE;
         });
 
         return removeVal(key[0], notify) != null;
@@ -323,7 +323,7 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
         );
     }
 
-    public void forEachBreakable(EachBreakble<K, V> e) {
+    public void forEachBreakable(EachBreakable<K, V> e) {
         getKeyList().forEachBreakable((i, k) -> e.onItem(i, k, BaseOptional.from(this.get(k))));
     }
 
@@ -390,15 +390,15 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
 
                 if (otherValue == null) {
                     result[0] = false;
-                    return  EachBreakble.BREAK;
+                    return  EachBreakable.BREAK;
                 }
 
                 if (!Objects.equals(value, otherValue.get())) {
                     result[0] = false;
-                    return  EachBreakble.BREAK;
+                    return  EachBreakable.BREAK;
                 }
 
-                return EachBreakble.CONTINUE;
+                return EachBreakable.CONTINUE;
             });
 
             return result[0];
@@ -415,7 +415,7 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
                 if (!Objects.equals(value, otherValue))
                     result[0] = false;
 
-                return result[0] ? EachBreakble.CONTINUE : EachBreakble.BREAK;
+                return result[0] ? EachBreakable.CONTINUE : EachBreakable.BREAK;
             });
 
             return result[0];
@@ -431,7 +431,7 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
         void onItem(int i, K key, V value);
     }
 
-    public interface EachBreakble<K, V> {
+    public interface EachBreakable<K, V> {
         byte BREAK = 0x0;
         byte CONTINUE = 0x1;
         byte SKIP_NEXT = 0x2;
