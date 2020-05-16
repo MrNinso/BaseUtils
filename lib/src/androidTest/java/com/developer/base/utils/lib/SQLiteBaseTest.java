@@ -1,4 +1,4 @@
-package com.developer.base.utils.demo;
+package com.developer.base.utils.lib;
 
 import android.content.ContentValues;
 import android.content.Context;
