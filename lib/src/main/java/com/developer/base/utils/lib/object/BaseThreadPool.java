@@ -8,7 +8,6 @@ public class BaseThreadPool {
     private BaseList<BaseTask> mQueue = new BaseList<>();
     private BaseList<Thread> mThreads = new BaseList<>();
 
-    private boolean mRemovingThread = false;
     private int mCores = 0;
 
     public BaseThreadPool() {
@@ -34,7 +33,7 @@ public class BaseThreadPool {
 
                     Integer nextCore = getNextFreeCore();
                     while (nextCore != null && mQueue.size() > 0) {
-                        mTaskPool.put(nextCore, BaseOptional.of(mQueue.removeIfExists(0)));
+                        mTaskPool.putAndNotify(nextCore, BaseOptional.of(mQueue.removeIfExists(0)));
                         nextCore = getNextFreeCore();
                     }
                     return null;
@@ -60,7 +59,7 @@ public class BaseThreadPool {
         this.mQueue.add(task);
         Integer nextFreeCore = this.getNextFreeCore();
         if (nextFreeCore != null && this.mQueue.size() == 1) {
-            mTaskPool.put(nextFreeCore, BaseOptional.of(this.mQueue.removeIfExists(0)));
+            mTaskPool.putAndNotify(nextFreeCore, BaseOptional.of(this.mQueue.removeIfExists(0)));
         }
     }
 
