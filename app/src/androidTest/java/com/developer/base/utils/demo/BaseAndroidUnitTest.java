@@ -1,4 +1,4 @@
-package com.developer.base.utils.lib;
+package com.developer.base.utils.demo;
 
 import android.content.Context;
 
@@ -16,8 +16,13 @@ import org.junit.runner.RunWith;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ */
 @RunWith(AndroidJUnit4.class)
 public class BaseAndroidUnitTest {
     @Test

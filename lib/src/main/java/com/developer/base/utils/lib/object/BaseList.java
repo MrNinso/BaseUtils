@@ -222,33 +222,6 @@ public class BaseList<T> extends ArrayList<T> {
         }
     }
 
-    @Override
-    public boolean equals(@Nullable Object o) {
-        if (this == o)
-            return true;
-
-        if (o instanceof List<?>) {
-            List<?> other = (List<?>) o;
-
-            if (other.size() != this.size())
-                return false;
-
-            final boolean[] r = new boolean[] {true};
-
-            this.forEachBreakable((i, t) -> {
-                if (!t.equals(other.get(i))) {
-                    r[0] = false;
-                    return EachBreakable.BREAK;
-                }
-
-                return EachBreakable.CONTINUE;
-            });
-
-            return r[0];
-        }
-        return false;
-    }
-
     public interface Count<T> {
         boolean count(int index, T t, int count);
     }
