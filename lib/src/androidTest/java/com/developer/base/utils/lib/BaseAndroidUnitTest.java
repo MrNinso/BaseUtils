@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.developer.base.utils.lib.object.BaseTask;
 import com.developer.base.utils.lib.object.BaseThreadPool;
+import com.developer.base.utils.lib.tool.BaseCrypto;
 import com.developer.base.utils.lib.tool.BaseDevice;
 
 import org.junit.Assert;
@@ -101,6 +102,52 @@ public class BaseAndroidUnitTest {
 
         Assert.assertEquals(count.get(), testSize);
         pool.reboot();
+    }
+
+    @Test
+    public void byteToHex() {
+        byte[] bytes = new byte[] { 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
+        Assert.assertEquals("0A0B0C0D0E0F",BaseCrypto.getInstance().bytesToHex(bytes));
+    }
+
+    @Test
+    public void Base64Test() {
+        byte[] msg = "This is a error".getBytes();
+
+        byte[] msg1 = BaseCrypto.getInstance().fromBase64(
+                BaseCrypto.getInstance().toBase64(msg)
+        );
+
+        Assert.assertEquals(
+            new String(msg),
+            new String(msg1)
+        );
+    }
+
+    @Test
+    public void HmacSHA512Test() {
+        String s = BaseCrypto.getInstance().HmacSHA512Hex("key".getBytes(), "you can't see this by :)".getBytes());
+
+        Assert.assertEquals(
+                "b6b56d4ba00b9bd6e2e7ca278c07b5af1deea53bc8f2389fd53d70518a5076a31bb5d5b9361439bbc1a3f2c4fe341998b1da33b28869da0e02c030fb5e79cd6f",
+                s.toLowerCase()
+        );
+
+    }
+
+    @Test
+    public void AESTest() {
+        String pass = "@SuperP0werfulPassword!";
+        String msg = "Please don't read";
+        byte[] key = BaseCrypto.getInstance().makeAESSHA512Key(pass.getBytes(), 24);
+
+        BaseCrypto.AESEncryptMsg encryptedMsg = BaseCrypto.getInstance().encryptAES(msg.getBytes(), key);
+
+        Assert.assertNotNull(encryptedMsg);
+
+        String dencryptMsg = new String(BaseCrypto.getInstance().decryptAES(encryptedMsg, key));
+
+        Assert.assertEquals(msg, dencryptMsg);
     }
 
     @Test

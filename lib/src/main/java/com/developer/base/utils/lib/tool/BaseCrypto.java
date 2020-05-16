@@ -3,10 +3,10 @@ package com.developer.base.utils.lib.tool;
 import android.util.Base64;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -61,6 +61,10 @@ public class BaseCrypto {
         return new String(hexChars);
     }
 
+    public String HmacSHA512Hex(byte[] key, byte[] input) {
+        return bytesToHex(HmacSHA512(key, input));
+    }
+
     public byte[] HmacSHA512(byte[] key, byte[] input) {
         try {
             Mac mac = Mac.getInstance("HmacSHA512");
@@ -73,13 +77,13 @@ public class BaseCrypto {
         return null;
     }
 
-    public byte[] makeSHA512Key(byte[] pass, int keySize) {
+    public byte[] makeAESSHA512Key(byte[] pass, int keySize) {
         try {
             byte[] key = new byte[keySize];
             MessageDigest m = MessageDigest.getInstance("SHA-512");
             m.update(pass,0,pass.length);
 
-            byte[] k = new BigInteger(1, m.digest()).toString(16).getBytes(StandardCharsets.UTF_8);
+            byte[] k = new BigInteger(1, m.digest()).toString(16).getBytes();
             for (int i = 0; i < key.length; i++) {
                 if (i < k.length)
                     key[i] = k[i];
@@ -121,6 +125,16 @@ public class BaseCrypto {
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
             byte[] plain = new byte[cipher.getOutputSize(cipherLength)];
             cipher.doFinal(plain, cipher.update(cipherData, 0, cipherLength, plain, 0));
+
+            if (plain[plain.length - 1] == 0x0) {
+                int end = plain.length - 1;
+
+                while (plain[end] == 0x0) {
+                    end--;
+                }
+
+                return Arrays.copyOf(plain, end+1);
+            }
 
             return plain;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | ShortBufferException | BadPaddingException | IllegalBlockSizeException e) {
