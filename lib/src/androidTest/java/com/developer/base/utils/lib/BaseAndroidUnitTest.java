@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 public class BaseAndroidUnitTest {
+
     @Test
     public void TestDevicePool() {
         AtomicInteger count = new AtomicInteger();

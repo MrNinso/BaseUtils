@@ -72,7 +72,7 @@ public class SQLiteBaseTest {
     @Test
     public void readToList() {
         BaseList<Integer> i = helper.readList("SELECT * FROM TEST", null,
-                (c, count) -> c.getInt(1)
+            (c, count) -> c.getInt(1)
         );
 
         Assert.assertEquals(dataBase, i);
@@ -81,45 +81,45 @@ public class SQLiteBaseTest {
     @Test
     public void readToMap() {
         BaseMap<Integer, String> i = helper.readMap("SELECT * FROM TEST", null,
-                (c, count) -> {
-                    Assert.assertEquals(String.valueOf(c.getInt(0)),  c.getString(0));
-                    return new BaseEntry<>(c.getInt(1), c.getString(0));
-                }
+            (c, count) -> {
+                Assert.assertEquals(String.valueOf(c.getInt(0)),  c.getString(0));
+                return new BaseEntry<>(c.getInt(1), c.getString(0));
+            }
         );
 
         BaseList<Integer> keys = i.getKeyList();
 
         dataBase.forEach((index, integer) ->
-                Assert.assertTrue(keys.contains(integer))
+            Assert.assertTrue(keys.contains(integer))
         );
     }
 
     @Test
     public void doTransaction() {
         Assert.assertTrue(helper.doTransaction(
-                (helper) -> {
-                    int i = helper.getWritableDatabase()
-                            .delete(
-                                    "TEST",
-                                    String.format("B >= %d", dataBase.size()+1),
-                                    null
-                            );
-                    Assert.assertEquals(0, i);
-                    return true;
-                }
+            (helper) -> {
+                int i = helper.getWritableDatabase()
+                        .delete(
+                                "TEST",
+                                String.format("B >= %d", dataBase.size()+1),
+                                null
+                        );
+                Assert.assertEquals(0, i);
+                return true;
+            }
         ));
 
         Assert.assertFalse(helper.doTransaction(
-                (helper) -> {
-                    int i = helper.getWritableDatabase()
-                            .delete(
-                                    "TEST",
-                                    String.format("B >= %d", dataBase.size()+1),
-                                    null
-                            );
-                    Assert.assertEquals(0, i);
-                    return false;
-                }
+            (helper) -> {
+                int i = helper.getWritableDatabase()
+                        .delete(
+                                "TEST",
+                                String.format("B >= %d", dataBase.size()+1),
+                                null
+                        );
+                Assert.assertEquals(0, i);
+                return false;
+            }
         ));
     }
 }
