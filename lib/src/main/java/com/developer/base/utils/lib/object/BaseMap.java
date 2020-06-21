@@ -3,15 +3,15 @@ package com.developer.base.utils.lib.object;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class BaseMap<K, V> extends HashMap<K, V> {
 
-    private BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
-    private BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
+    private final BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
+    private final BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
 
     public BaseMap() {}
 
@@ -110,15 +110,20 @@ public class BaseMap<K, V> extends HashMap<K, V> {
 
 
 
-    public boolean removeIf(Remove<K, V> r) {
-        Iterator<Entry<K, V>> iterator = this.entrySet().iterator();
+    public boolean removeIf(RemoveIf<K, V> r) {
+        final Object[] key = new Object[] { null };
 
-        while (iterator.hasNext()) {
-            Entry<K, V> e = iterator.next();
-            if (r.remove(e.getKey(), e.getValue())) {
-                iterator.remove();
-                return true;
+        forEachBreakable((i, k, v) -> {
+            if (r.remove(k, v)) {
+                key[0] = k;
+                return EachBreakable.BREAK;
             }
+            return EachBreakable.CONTINUE;
+        });
+
+        if (key[0] != null) {
+            remove(key[0]);
+            return true;
         }
 
         return false;
@@ -272,7 +277,7 @@ public class BaseMap<K, V> extends HashMap<K, V> {
                     return  EachBreakable.BREAK;
                 }
 
-                if (!Objects.equals(value, otherVal)) {
+                if (!value.equals(otherVal)) {
                     result[0] = false;
                     return  EachBreakable.BREAK;
                 }
@@ -291,7 +296,7 @@ public class BaseMap<K, V> extends HashMap<K, V> {
 
             this.forEachBreakable((i, key, value) -> {
                 Object otherValue = other.get(key);
-                if (!Objects.equals(value, otherValue))
+                if (!value.equals(otherValue))
                     result[0] = false;
 
                 return result[0] ? EachBreakable.CONTINUE : EachBreakable.BREAK;
@@ -304,6 +309,95 @@ public class BaseMap<K, V> extends HashMap<K, V> {
     @Override
     public int hashCode() {
         return this.extract((i, key, value, count) -> new BaseEntry<>(key, value)).hashCode();
+    }
+
+    public static <K, V> void forEach(Map<K, V> m, Each<K, V> e) {
+        final int[] i = { 0 };
+
+        for (Entry<K, V> entry : m.entrySet()) {
+            e.onItem(i[0], entry.getKey(), entry.getValue());
+            i[0]++;
+        }
+    }
+
+    public static <K, V> void forEachBreakable(Map<K, V> m, EachBreakable<K, V> e) {
+        final int[] i = { 0 };
+        final boolean[] skip = { false };
+
+        for (Entry<K, V> entry : m.entrySet()) {
+            if (skip[0]) {
+                i[0]++;
+                skip[0] = false;
+                continue;
+            }
+
+            byte r = e.onItem(i[0], entry.getKey(), entry.getValue());
+            i[0]++;
+
+            if (r == EachBreakable.SKIP_NEXT) {
+                skip[0] = true;
+            } else if (r == EachBreakable.BREAK)
+                break;
+        }
+    }
+
+    public static <K, V> int countIf(Map<K, V> m, Count<K, V> c) {
+        final int[] count = { 0 };
+
+        forEach(m, (i, k, v) -> {
+            if (c.onItem(i, k, v, count[0]))
+                count[0]++;
+        });
+
+        return count[0];
+    }
+
+    public static <K, V, OK, OV> Map<OK, OV> extract(Map<K, V> m, Extract<K, V, OK, OV> e) {
+        Map<OK, OV> reuslt = new HashMap<>();
+
+        forEach(m, (i, k, v) -> {
+            Entry<OK, OV> entry = e.onItem(i, k, v, reuslt.size());
+
+            if (entry != null)
+                reuslt.put(entry.getKey(), entry.getValue());
+
+        });
+
+        return reuslt;
+    }
+
+    public static <K, V, O> List<O> extractList(Map<K, V> m, ExtractList<K, V, O> e) {
+        List<O> result = new ArrayList<>();
+
+        forEach(m, (i, k, v) -> {
+            O o = e.onItem(i, k, v, result.size());
+
+            if (o != null) {
+                result.add(o);
+            }
+        });
+
+        return result;
+    }
+
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public static <K, V> boolean removeIf(Map<K, V> m, RemoveIf<K, V> r) {
+        final Object[] key = new Object[] { null };
+
+        forEachBreakable(m, (i, k, v) -> {
+            if (r.remove(k, v)) {
+                key[0] = k;
+                return EachBreakable.BREAK;
+            }
+            return EachBreakable.CONTINUE;
+        });
+
+        if (key[0] != null) {
+            m.remove(key[0]);
+            return true;
+        }
+
+        return false;
     }
 
     public interface Each<K, V> {
@@ -326,7 +420,7 @@ public class BaseMap<K, V> extends HashMap<K, V> {
         boolean onItem(int i, K k, V v,int count);
     }
 
-    public interface Remove<K, V> {
+    public interface RemoveIf<K, V> {
         boolean remove(K k, V v);
     }
 

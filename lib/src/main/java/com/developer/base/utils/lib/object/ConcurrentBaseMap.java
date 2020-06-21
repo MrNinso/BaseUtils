@@ -4,13 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V>> implements Cloneable {
 
-    private BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
-    private BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
+    private final BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
+    private final BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
 
     public ConcurrentBaseMap() {}
 
@@ -167,7 +166,7 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
     }
 
     public void putAllNotify(int size, PutAll<K, V> p) {
-        putAllVal((Map<K, V>) new ConcurrentBaseMap<K, V>(size, p), true);
+        putAllVal((Map<K, V>) new ConcurrentBaseMap<>(size, p), true);
     }
 
     private BaseMap<K, Boolean> putAllAbsentVal(Map<K, V> m, boolean notify) {
@@ -196,11 +195,11 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
     }
 
     public BaseMap<K, Boolean> putAllAbsent(int size, PutAll<K, V> p) {
-        return putAllAbsentVal((Map<K, V>) new ConcurrentBaseMap<K, V>(size, p), false);
+        return putAllAbsentVal((Map<K, V>) new ConcurrentBaseMap<>(size, p), false);
     }
 
     public BaseMap<K, Boolean> putAllAbsentAndNotify(int size, PutAll<K, V> p) {
-        return putAllAbsentVal((Map<K, V>) new ConcurrentBaseMap<K, V>(size, p), true);
+        return putAllAbsentVal((Map<K, V>) new ConcurrentBaseMap<>(size, p), true);
     }
 
     public BaseList<K> getKeyList() {
@@ -393,7 +392,7 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
                     return  EachBreakable.BREAK;
                 }
 
-                if (!Objects.equals(value, otherValue.get())) {
+                if (!value.equals(otherValue.get())) {
                     result[0] = false;
                     return  EachBreakable.BREAK;
                 }
@@ -412,7 +411,7 @@ public class ConcurrentBaseMap<K, V> extends ConcurrentHashMap<K, BaseOptional<V
 
             this.forEachBreakable((i, key, value) -> {
                 Object otherValue = other.get(key);
-                if (!Objects.equals(value, otherValue))
+                if (!value.equals(otherValue))
                     result[0] = false;
 
                 return result[0] ? EachBreakable.CONTINUE : EachBreakable.BREAK;

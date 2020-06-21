@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 public class BaseThreadPool {
 
-    private ConcurrentBaseMap<Integer, BaseTask> mTaskPool = new ConcurrentBaseMap<>();
+    private final ConcurrentBaseMap<Integer, BaseTask> mTaskPool = new ConcurrentBaseMap<>();
     private BaseList<BaseTask> mQueue = new BaseList<>();
     private BaseList<Thread> mThreads = new BaseList<>();
 

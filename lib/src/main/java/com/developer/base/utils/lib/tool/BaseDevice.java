@@ -5,28 +5,19 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.hardware.camera2.CameraManager;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.developer.base.utils.lib.object.BaseTask;
 import com.developer.base.utils.lib.object.BaseThreadPool;
-
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class BaseDevice {
 
@@ -34,7 +25,7 @@ public class BaseDevice {
     private static BaseScreen mScreen;
     private static BaseVibrator mVibrator;
 
-    private static BaseThreadPool mAsync = new BaseThreadPool();
+    private static final BaseThreadPool mAsync = new BaseThreadPool();
 
     private BaseDevice() {
         throw new UnsupportedOperationException("u can't do this");
@@ -125,7 +116,7 @@ public class BaseDevice {
     }
 
     public static class BaseApp {
-        private Application nApp;
+        private final Application nApp;
 
         private BaseApp() {
             throw new UnsupportedOperationException("u can't do this please try BaseDevice.getApp()");
@@ -246,7 +237,7 @@ public class BaseDevice {
     }
 
     public static class BaseVibrator {
-        private Vibrator nVibrator;
+        private final Vibrator nVibrator;
 
         private BaseVibrator() {
             throw new UnsupportedOperationException("u can't do this please try BaseDevice.getApp()");

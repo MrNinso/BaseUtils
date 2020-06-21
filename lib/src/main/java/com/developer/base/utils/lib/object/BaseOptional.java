@@ -2,10 +2,6 @@ package com.developer.base.utils.lib.object;
 
 import androidx.annotation.NonNull;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
-
 public class BaseOptional<T> {
     private static final BaseOptional<?> EMPTY = new BaseOptional<>();
 

@@ -7,7 +7,9 @@ import com.developer.base.utils.lib.tool.BaseRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class BaseList<T> extends ArrayList<T> {
@@ -183,9 +185,8 @@ public class BaseList<T> extends ArrayList<T> {
         forEach((index, t) -> {
             O o = e.extract(index, t, result.size());
 
-            if (o != null) {
+            if (o != null)
                 result.add(o);
-            }
         });
 
         return result;
@@ -220,6 +221,116 @@ public class BaseList<T> extends ArrayList<T> {
             else if (r == EachBreakable.SKIP_NEXT)
                 i++;
         }
+    }
+
+    public static <T> void forEach(List<T> list, Each<T> e) {
+        for (int i = 0; i < list.size(); i++) {
+            e.each(i, list.get(i));
+        }
+    }
+
+    public static <T> void forEachBreakable(List<T> list, EachBreakable<T> e) {
+        for (int i = 0; i < list.size(); i++) {
+            byte r = e.each(i, list.get(i));
+
+            if (r == EachBreakable.BREAK)
+                break;
+            else if (r == EachBreakable.SKIP_NEXT)
+                i++;
+        }
+    }
+
+    public static <T> void addAll(List<T> list, int size, AddAll<T> a) {
+        for (int i = 0; i < size; i++) {
+            list.add(a.add(i));
+        }
+    }
+
+    public static <T> void addAllAbsent(List<T> list, int size, AddAll<T> a) {
+        for (int i = 0; i < size; i++) {
+            T t = a.add(i);
+            if (!list.contains(t))
+                list.add(t);
+        }
+    }
+
+    public static <T> int countIf(List<T> list, Count<T> c) {
+        final int[] count = {0};
+
+        forEach(list, (i, t) ->
+                count[0] = count[0] + ((c.count(i, list.get(i), count[0])) ? 1 : 0)
+        );
+
+        return count[0];
+    }
+
+    public static <T, O> List<O> extract(List<T> list, ExtractList<T, O> e) {
+        List<O> extracted = new ArrayList<>();
+
+        forEach(list, (i, t) -> {
+            O o = e.extract(i, list.get(i), extracted.size());
+            if (o != null)
+                extracted.add(o);
+        });
+
+        return extracted;
+    }
+
+    public static <K, O, T> Map<K, O> extractMap(List<T> list, ExtractListToMap<K, T, O> e) {
+        Map<K, O> result = new HashMap<>();
+
+        forEach(list, (i, t) -> {
+            Entry<K, O> entry = e.map(i, t, result.size());
+
+            if (entry != null) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        });
+
+        return result;
+    }
+
+    public static <T> T getRandom(List<T> list) {
+        if (list.size() > 0)
+            return list.get(BaseRandom.getIntace().getRandomPositiveInt(list.size() - 1, 0));
+        else
+            return null;
+    }
+
+    public static <K, T> Map<K, T> map(List<T> list, MapList<K, T> m) {
+        Map<K, T> map = new HashMap<>();
+
+        forEach(list,(index, t) -> map.put(m.getKey(index, t), t));
+
+        return map;
+    }
+
+    public static <T> List<T> removeAllIf(List<T> list, RemoveIf<T> r) {
+        List<T> old = new ArrayList<>();
+
+        forEach(list, (i, t) -> {
+            if (r.remove(i, t, old.size()))
+                old.add(t);
+        });
+
+        list.removeAll(old);
+
+        return old;
+    }
+
+    public static <T> int search(List<T> list, SearchList<T> s) {
+        final int[] index = {-1};
+
+        forEachBreakable(list, (i, t) -> {
+            if (s.isItem(i, t)) {
+                index[0] = i;
+                return EachBreakable.BREAK;
+            } else {
+                return EachBreakable.CONTINUE;
+            }
+        });
+
+        return index[0];
     }
 
     public interface Count<T> {

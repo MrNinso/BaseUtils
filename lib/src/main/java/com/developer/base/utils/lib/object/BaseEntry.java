@@ -4,10 +4,9 @@ import androidx.annotation.Nullable;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 public class BaseEntry<K, V> implements Map.Entry<K, V> {
-    private K mKey;
+    private final K mKey;
     private V mValue;
 
     public BaseEntry(K Key, V Value) {
@@ -42,6 +41,6 @@ public class BaseEntry<K, V> implements Map.Entry<K, V> {
 
         Entry<?, ?> e = (Entry<?, ?>) obj;
 
-        return Objects.equals(e.getKey(), this.getKey()) && Objects.equals(e.getValue(), this.getValue());
+        return this.getKey().equals(e.getKey()) && this.getValue().equals(e.getValue());
     }
 }

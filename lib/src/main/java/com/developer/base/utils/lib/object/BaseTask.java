@@ -12,11 +12,11 @@ public class BaseTask implements Runnable {
 
     BaseRunnable mExit;
 
-    private BaseRunnable mRunnable;
-    private BaseList<FailListener> mFailListeners = new BaseList<>();
-    private BaseList<PreRunListener> mPreRunListeners = new BaseList<>();
-    private BaseList<PosRunListener> mPosRunListeners = new BaseList<>();
-    private Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
+    private final BaseRunnable mRunnable;
+    private final BaseList<FailListener> mFailListeners = new BaseList<>();
+    private final BaseList<PreRunListener> mPreRunListeners = new BaseList<>();
+    private final BaseList<PosRunListener> mPosRunListeners = new BaseList<>();
+    private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
 
     public BaseTask(BaseRunnable run) {
         this.mRunnable = run;
