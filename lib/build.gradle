@@ -65,6 +65,7 @@ task javadoc(type: Javadoc) {
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 
+javadoc.failOnError(false)
 task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
     archiveClassifier.set("javadoc")
