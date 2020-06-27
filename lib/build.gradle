@@ -1,15 +1,16 @@
 plugins {
     id 'com.android.library'
+    id 'maven-publish'
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.7.RC"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -30,12 +31,43 @@ android {
     }
 }
 
+def getVersionName = { ->
+    return "1.0.7.RC" // Replace with version Name
+}
+
+def getArtificatId = { ->
+    return "BaseUtils" // Replace with library name ID
+}
+
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.developer3'
+            artifactId getArtificatId()
+            version getVersionName()
+            artifact("$buildDir/outputs/aar/${getArtificatId()}-release.aar")
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/MrNinso/BaseUtils")
+
+            credentials {
+                username = System.getenv("USERNAME")
+                password = System.getenv("TOKEN")
+            }
+        }
+    }
+}
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.material:material:1.1.0'
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
     testImplementation 'org.robolectric:robolectric:4.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
