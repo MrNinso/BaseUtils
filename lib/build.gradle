@@ -1,7 +1,10 @@
 plugins {
     id 'com.android.library'
     id 'maven-publish'
+    id "com.jfrog.bintray" version "1.8.5"
 }
+
+def mVersion = "1.1.0.RC"
 
 android {
     compileSdkVersion 30
@@ -10,7 +13,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0.8.RC"
+        versionName mVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -31,18 +34,93 @@ android {
     }
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/MrNinso/BaseUtils")
+def pomConfig = {
+    licenses {
+        license {
+            name "MIT License"
+            url "https://github.com/MrNinso/BaseUtils/blob/master/LICENSE"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "developer3"
+            name "Developer³"
+            email "jheison540as@gmail.com"
+        }
+    }
 
-            credentials {
-                username = System.getenv("USERNAME")
-                password = System.getenv("TOKEN")
+    scm {
+        url "https://github.com/MrNinso/BaseUtils"
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    archiveClassifier.set("sourcesJar")
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    archiveClassifier.set("javadoc")
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            groupId 'com.developer3'
+            artifactId 'BaseUtils'
+            version mVersion
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+            artifact javadocJar {
+                classifier "javadoc"
+            }
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'BaseUtils is a toolbox to help you interact with the android system and codeless.')
+                root.appendNode('name', 'BaseUtils')
+                root.appendNode('url', 'https://github.com/MrNinso/BaseUtils')
+                root.children().last() + pomConfig
             }
         }
     }
+}
+
+bintray {
+    user = System.getenv('USERNAME')
+    key = System.getenv('TOKEN')
+    publications = ['mavenPublication']
+
+    pkg {
+        repo = 'com.developer3.libs'
+        name = 'BaseUtils'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/MrNinso/BaseUtils.git'
+        version {
+            name = mVersion
+            desc = mVersion
+            released = new Date()
+            gpg{
+                sign = true
+            }
+        }
+    }
+
+    publish = true
 }
 
 dependencies {
@@ -51,7 +129,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0'
 
     testImplementation 'junit:junit:4.13'
-    testImplementation 'org.robolectric:robolectric:4.0'
+    testImplementation 'org.robolectric:robolectric:4.0' //TODO
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
