@@ -40,15 +40,6 @@ def getArtificatId = { ->
 }
 
 publishing {
-    publications {
-        bar(MavenPublication) {
-            groupId 'com.developer3'
-            artifactId getArtificatId()
-            version getVersionName()
-            artifact("$buildDir/outputs/aar/${getArtificatId()}-release.aar")
-        }
-    }
-
     repositories {
         maven {
             name = "GitHubPackages"
