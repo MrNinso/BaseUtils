@@ -116,10 +116,8 @@ publishing {
 }
 
 bintray {
-//    user = System.getenv('USERNAME')
-//    key = System.getenv('TOKEN')
-    user = "developer3"
-    key = "c8900d9ced6727daa9dab6d31cadb6e74ac2f814"
+    user = System.getenv('USERNAME')
+    key = System.getenv('TOKEN')
 
     publications = ['release']
     configurations = ['archives']
