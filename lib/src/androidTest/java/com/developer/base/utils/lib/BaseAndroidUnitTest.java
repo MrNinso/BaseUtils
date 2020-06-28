@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.developer.base.utils.lib.object.BaseLiveData;
 import com.developer.base.utils.lib.object.BaseTask;
 import com.developer.base.utils.lib.object.BaseThreadPool;
 import com.developer.base.utils.lib.tool.BaseCrypto;
@@ -18,6 +19,8 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class BaseAndroidUnitTest {
@@ -155,5 +158,88 @@ public class BaseAndroidUnitTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.developer.base.utils.lib.test", appContext.getPackageName());
+    }
+
+    @Test
+    public void LiveDataMainToMain() {
+        BaseLiveData<Byte> testLive = new BaseLiveData<>();
+
+        final boolean[] notifyed = {false};
+
+        testLive.addOnUpdateListener(data -> {
+            assertNotNull(data);
+            assertEquals(0x1, data.byteValue());
+            notifyed[0] = true;
+        });
+
+        testLive.updateData((byte) 0x1);
+
+        long end = System.currentTimeMillis() + 500;
+
+        while (end > System.currentTimeMillis());
+
+        assertTrue(notifyed[0]);
+    }
+
+    @Test
+    public void LiveDataMainToBackground() {
+        BaseLiveData<Byte> testLive = new BaseLiveData<>();
+
+        final boolean[] notifyed = {false};
+
+        testLive.addOnUpdateListener(data -> {
+            assertNotNull(data);
+            assertEquals(0x1, data.byteValue());
+            notifyed[0] = true;
+        });
+
+        testLive.updateData((byte) 0x1, false);
+
+        long end = System.currentTimeMillis() + 500;
+
+        while (end > System.currentTimeMillis());
+
+        assertTrue(notifyed[0]);
+    }
+
+    @Test
+    public void LiveDataBackgroundToMain() {
+        BaseLiveData<Byte> testLive = new BaseLiveData<>();
+
+        final boolean[] notifyed = {false};
+
+        testLive.addOnUpdateListener(data -> {
+            assertNotNull(data);
+            assertEquals(0x1, data.byteValue());
+            notifyed[0] = true;
+        });
+
+        new Thread(() -> testLive.updateData((byte) 0x1)).start();
+
+        long end = System.currentTimeMillis() + 500;
+
+        while (end > System.currentTimeMillis());
+
+        assertTrue(notifyed[0]);
+    }
+
+    public void LiveDataBackgroundToBackground() {
+        BaseLiveData<Byte> testLive = new BaseLiveData<>();
+
+        final boolean[] notifyed = {false};
+
+        testLive.addOnUpdateListener(data -> {
+            assertNotNull(data);
+            assertEquals(0x1, data.byteValue());
+            notifyed[0] = true;
+        });
+
+        new Thread(() -> testLive.updateData((byte) 0x1, false)).start();
+
+        long end = System.currentTimeMillis() + 500;
+
+        while (end > System.currentTimeMillis());
+
+        assertTrue(notifyed[0]);
     }
 }
