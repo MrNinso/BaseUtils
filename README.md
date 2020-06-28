@@ -1,5 +1,6 @@
 # BaseUtils
 [![](https://jitpack.io/v/MrNinso/BaseUtils.svg)](https://jitpack.io/#MrNinso/BaseUtils)
+![Gradle bintray Package](https://github.com/MrNinso/BaseUtils/workflows/Gradle%20bintray%20Package/badge.svg)
 
 
 BaseUtils is a toolbox to help you interact with the android system and codeless.
@@ -12,15 +13,16 @@ BaseUtils is a toolbox to help you interact with the android system and codeless
 allprojects {
 	repositories {
 		...
-		maven { url 'https://jitpack.io' }
+		maven { url 'https://dl.bintray.com/developer3/com.developer3.libs' }
 	}
 }
 ````
 
+
  2. Add the dependency
  ````css
 dependencies {
-		implementation 'com.github.MrNinso:BaseUtils:1.0.5.RC'
+		implementation 'com.developer3:BaseUtils:1.0.8.RC'
 }
 ````
 
