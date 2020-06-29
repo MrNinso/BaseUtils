@@ -31,3 +31,4 @@ jobs:
       env:
         USERNAME: ${{ secrets.USER }}
         TOKEN: ${{ secrets.TOKEN }}
+        VERSION: ${{ steps.tag.outputs.result }}
