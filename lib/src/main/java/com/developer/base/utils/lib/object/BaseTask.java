@@ -1,7 +1,6 @@
 package com.developer.base.utils.lib.object;
 
-import android.os.Handler;
-import android.os.Looper;
+import com.developer.base.utils.lib.tool.BaseDevice;
 
 public class BaseTask implements Runnable {
 
@@ -16,7 +15,6 @@ public class BaseTask implements Runnable {
     private final BaseList<FailListener> mFailListeners = new BaseList<>();
     private final BaseList<PreRunListener> mPreRunListeners = new BaseList<>();
     private final BaseList<PosRunListener> mPosRunListeners = new BaseList<>();
-    private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
 
     public BaseTask(BaseRunnable run) {
         this.mRunnable = run;
@@ -62,7 +60,7 @@ public class BaseTask implements Runnable {
     }
 
     private void postInUIThread(BaseRunnable run, String stage) {
-        mMainThreadHandler.post(() -> {
+        BaseDevice.getMainThreadHandler().post(() -> {
             try {
                 run.run(BaseTask.this);
             } catch (Exception e) {

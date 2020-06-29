@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -27,6 +29,8 @@ public class BaseDevice {
 
     private static final BaseThreadPool mAsync = new BaseThreadPool();
 
+    private static final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
+
     private BaseDevice() {
         throw new UnsupportedOperationException("u can't do this");
     }
@@ -37,6 +41,10 @@ public class BaseDevice {
         }
 
         mAsync.addTask(task);
+    }
+
+    public static Handler getMainThreadHandler() {
+        return mMainThreadHandler;
     }
 
     public static void execulteAsyncAndRepeat(int repeat, BaseTask task) {
@@ -171,7 +179,7 @@ public class BaseDevice {
         public DisplayMetrics getScreenSizePixels(Activity activity) {
             DisplayMetrics dm = new DisplayMetrics();
 
-            activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+            activity.getWindowManager().getDefaultDisplay().getMetrics(dm);// TODO
 
             return dm;
         }
@@ -254,6 +262,5 @@ public class BaseDevice {
         //TODO
 
     }
-
 
 }

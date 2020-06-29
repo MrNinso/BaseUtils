@@ -229,6 +229,10 @@ public class BaseList<T> extends ArrayList<T> {
         }
     }
 
+    public static <T> void forEach(Collection<T> collection, Each<T> e) {
+        forEach(new ArrayList<>(collection), e);
+    }
+
     public static <T> void forEachBreakable(List<T> list, EachBreakable<T> e) {
         for (int i = 0; i < list.size(); i++) {
             byte r = e.each(i, list.get(i));
@@ -240,17 +244,21 @@ public class BaseList<T> extends ArrayList<T> {
         }
     }
 
-    public static <T> void addAll(List<T> list, int size, AddAll<T> a) {
+    public static <T> void forEachBreak(Collection<T> collection, EachBreakable<T> e) {
+        forEachBreakable(new ArrayList<>(collection), e);
+    }
+
+    public static <T> void addAll(Collection<T> collection, int size, AddAll<T> a) {
         for (int i = 0; i < size; i++) {
-            list.add(a.add(i));
+            collection.add(a.add(size));
         }
     }
 
-    public static <T> void addAllAbsent(List<T> list, int size, AddAll<T> a) {
+    public static <T> void addAllAbsent(Collection<T> collection, int size, AddAll<T> a) {
         for (int i = 0; i < size; i++) {
             T t = a.add(i);
-            if (!list.contains(t))
-                list.add(t);
+            if (!collection.contains(t))
+                collection.add(t);
         }
     }
 
@@ -264,6 +272,10 @@ public class BaseList<T> extends ArrayList<T> {
         return count[0];
     }
 
+    public static <T> int countIf(Collection<T> collection, Count<T> c) {
+        return countIf(new ArrayList<>(collection), c);
+    }
+
     public static <T, O> List<O> extract(List<T> list, ExtractList<T, O> e) {
         List<O> extracted = new ArrayList<>();
 
@@ -274,6 +286,10 @@ public class BaseList<T> extends ArrayList<T> {
         });
 
         return extracted;
+    }
+
+    public static <T, O> List<O> extract(Collection<T> collection, ExtractList<T, O> e) {
+        return extract(new ArrayList<>(collection), e);
     }
 
     public static <K, O, T> Map<K, O> extractMap(List<T> list, ExtractListToMap<K, T, O> e) {
@@ -290,11 +306,19 @@ public class BaseList<T> extends ArrayList<T> {
         return result;
     }
 
+    public static <K, O, T> Map<K, O> extractMap(Collection<T> collection, ExtractListToMap<K, T, O> e) {
+        return extractMap(new ArrayList<>(collection), e);
+    }
+
     public static <T> T getRandom(List<T> list) {
         if (list.size() > 0)
             return list.get(BaseRandom.getIntace().getRandomPositiveInt(list.size() - 1, 0));
         else
             return null;
+    }
+
+    public static <T> T getRandom(Collection<T> collection) {
+        return getRandom(new ArrayList<>(collection));
     }
 
     public static <K, T> Map<K, T> map(List<T> list, MapList<K, T> m) {
@@ -305,15 +329,19 @@ public class BaseList<T> extends ArrayList<T> {
         return map;
     }
 
-    public static <T> List<T> removeAllIf(List<T> list, RemoveIf<T> r) {
+    public static <K, T> Map<K, T> map(Collection<T> collection, MapList<K, T> m) {
+        return map(new ArrayList<>(collection), m);
+    }
+
+    public static <T> List<T> removeAllIf(Collection<T> collection, RemoveIf<T> r) {
         List<T> old = new ArrayList<>();
 
-        forEach(list, (i, t) -> {
+        forEach(collection, (i, t) -> {
             if (r.remove(i, t, old.size()))
                 old.add(t);
         });
 
-        list.removeAll(old);
+        collection.removeAll(old);
 
         return old;
     }
@@ -331,6 +359,10 @@ public class BaseList<T> extends ArrayList<T> {
         });
 
         return index[0];
+    }
+
+    public static <T> int search(Collection<T> collection, SearchList<T> s) {
+        return search(new ArrayList<>(collection), s);
     }
 
     public interface Count<T> {
