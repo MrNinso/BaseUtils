@@ -4,7 +4,7 @@ plugins {
     id 'com.jfrog.bintray' version '1.8.5'
 }
 
-def mVersion = "1.0.8.RC"
+def mVersion = System.getenv("VERSION")
 
 android {
     compileSdkVersion 30
