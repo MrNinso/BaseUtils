@@ -7,12 +7,15 @@ import com.developer.base.utils.lib.tool.BaseRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class BaseList<T> extends ArrayList<T> {
+public class BaseList<T> extends LinkedList<T> {
 
     public BaseList() {
         super();
@@ -52,6 +55,17 @@ public class BaseList<T> extends ArrayList<T> {
             return this.get(BaseRandom.getIntace().getRandomPositiveInt(this.size() - 1, 0));
         else
             return null;
+    }
+
+    public T getOrAddIfAbsent(int index, T t) {
+        T r = get(index);
+
+        if (r == null) {
+            add(index, t);
+            return t;
+        } else {
+            return r;
+        }
     }
 
     public boolean addIfAbsent(int index, T t) {
@@ -222,6 +236,19 @@ public class BaseList<T> extends ArrayList<T> {
                 i++;
         }
     }
+
+    @SuppressWarnings({"rawtypes"})
+    public void sort(Comparator<? super T> c) {
+        Object[] a = this.toArray();
+        Arrays.sort(a, (Comparator)c);
+        ListIterator<T> i = this.listIterator();
+
+        for (Object o : a) {
+            i.next();
+            i.set((T) o);
+        }
+    }
+
 
     public static <T> void forEach(List<T> list, Each<T> e) {
         for (int i = 0; i < list.size(); i++) {

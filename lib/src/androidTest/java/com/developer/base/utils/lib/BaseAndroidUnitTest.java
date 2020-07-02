@@ -15,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -223,6 +224,7 @@ public class BaseAndroidUnitTest {
         assertTrue(notifyed[0]);
     }
 
+    @Test
     public void LiveDataBackgroundToBackground() {
         BaseLiveData<Byte> testLive = new BaseLiveData<>();
 
@@ -235,6 +237,31 @@ public class BaseAndroidUnitTest {
         });
 
         new Thread(() -> testLive.updateData((byte) 0x1, false)).start();
+
+        long end = System.currentTimeMillis() + 500;
+
+        while (end > System.currentTimeMillis());
+
+        assertTrue(notifyed[0]);
+    }
+
+    @Test
+    public void LiveDataJustNotify() {
+        ArrayList<Byte> b = new ArrayList<>();
+        BaseLiveData<ArrayList<Byte>> testLive = new BaseLiveData<>(b);
+
+        final boolean[] notifyed = {false};
+
+        testLive.addOnUpdateListener(data -> {
+            assertNotNull(data);
+            assertTrue(data.contains((byte) 0x1));
+            notifyed[0] = true;
+        });
+
+        new Thread(() -> {
+            b.add((byte) 0x1);
+            testLive.notifyUpdate();
+        }).start();
 
         long end = System.currentTimeMillis() + 500;
 

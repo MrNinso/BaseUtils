@@ -5,10 +5,11 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BaseMap<K, V> extends HashMap<K, V> {
+public class BaseMap<K, V> extends LinkedHashMap<K, V> {
 
     private final BaseList<PutListener<K, V>> mOnPutObservers = new BaseList<>();
     private final BaseList<RemoveListener<K, V>> mOnRemoveObservers = new BaseList<>();
@@ -108,8 +109,6 @@ public class BaseMap<K, V> extends HashMap<K, V> {
         return false;
     }
 
-
-
     public boolean removeIf(RemoveIf<K, V> r) {
         final Object[] key = new Object[] { null };
 
@@ -132,8 +131,6 @@ public class BaseMap<K, V> extends HashMap<K, V> {
     public V get(K k, V defaultValue) {
         return (this.containsKey(k)) ? this.get(k) : defaultValue;
     }
-
-
 
     public BaseMap<K, Boolean> putAllAbsent(Map<K, V> m) {
         BaseMap<K, Boolean> r = new BaseMap<>();

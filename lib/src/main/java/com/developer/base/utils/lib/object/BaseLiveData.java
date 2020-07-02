@@ -4,7 +4,13 @@ import com.developer.base.utils.lib.tool.BaseDevice;
 
 public class BaseLiveData<T> {
     private final BaseList<OnUpdateListener<T>> UpdateListeners = new BaseList<>();
-    private BaseOptional<T> Data = BaseOptional.empty();
+    private T Data;
+
+    public BaseLiveData() {}
+
+    public BaseLiveData(T data) {
+        Data = data;
+    }
 
     public void updateData(T data) {
         updateData(data, true, 0);
@@ -19,23 +25,38 @@ public class BaseLiveData<T> {
     }
 
     public void updateData(T data, boolean inMainThread, long delay) {
-        Data = BaseOptional.of(data);
+        Data = data;
+        notifyUpdate(inMainThread, delay);
+    }
 
+    public void notifyUpdate() {
+        notifyUpdate(true, 0);
+    }
+
+    public void notifyUpdate(boolean inMainThread) {
+        notifyUpdate(inMainThread, 0);
+    }
+
+    public void notifyUpdate(boolean inMainThread, long delay) {
         if (inMainThread) {
             BaseDevice.getMainThreadHandler().postDelayed(() ->
-                    UpdateListeners.forEach((i, l) -> l.onUpdate(Data.get())), delay)
+                    UpdateListeners.forEach((i, l) -> l.onUpdate(Data)), delay)
             ;
         } else {
             new Thread(() -> {
                 try {
                     Thread.sleep(delay);
-                    UpdateListeners.forEach((i, l) -> l.onUpdate(Data.get()));
+                    UpdateListeners.forEach((i, l) -> l.onUpdate(Data));
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }).start();
         }
+    }
+
+    public T getData() {
+        return Data;
     }
 
     public boolean addOnUpdateListener(OnUpdateListener<T> u) {
