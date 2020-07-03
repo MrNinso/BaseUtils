@@ -1,7 +1,7 @@
 # BaseUtils
 [![](https://jitpack.io/v/MrNinso/BaseUtils.svg)](https://jitpack.io/#MrNinso/BaseUtils)
 ![Gradle bintray Package](https://github.com/MrNinso/BaseUtils/workflows/Gradle%20bintray%20Package/badge.svg)
-
+ [ ![Download](https://api.bintray.com/packages/developer3/com.developer3.libs/BaseUtils/images/download.svg) ](https://bintray.com/developer3/com.developer3.libs/BaseUtils/_latestVersion)
 
 BaseUtils is a toolbox to help you interact with the android system and codeless.
 
