@@ -22,7 +22,7 @@ allprojects {
  2. Add the dependency
  ````css
 dependencies {
-		implementation 'com.developer3:BaseUtils:1.0.8.RC'
+		implementation 'com.developer3:BaseUtils:1.0.9.RC'
 }
 ````
 
